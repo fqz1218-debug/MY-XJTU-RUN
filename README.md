@@ -60,3 +60,8 @@
 
 - QQ：780661381
 - Email：780661381@qq.com 或 fqz1218@gmail.com
+
+
+## 致谢
+- 还是学长珠玉在前：
+- https://github.com/sdpd2333/XJTU-ERMAP.git，学长的库里也有一部分我未能提供的资源。

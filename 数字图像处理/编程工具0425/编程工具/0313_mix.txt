@@ -1,0 +1,29 @@
+byte[,] mix(byte[,] f1,byte[,] f2,double u)
+{
+   int w = f1.GetLength(0);
+   int h = f1.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=(byte)(f1[x,y]*(1-u)+f2[x,y]*u);
+        
+   return g;
+}
+
+void main()
+{
+   byte[,] f1 = LoadImg();
+   ShowImg("f1",f1);
+
+   byte[,] f2 = LoadImg();
+   ShowImg("f2",f2);
+
+   ShowImg("u=0",mix(f1,f2,0.0));
+   ShowImg("u=0.25",mix(f1,f2,0.25));
+   ShowImg("u=0.5",mix(f1,f2,0.5));
+   ShowImg("u=0.75",mix(f1,f2,0.75));
+   ShowImg("u=1",mix(f1,f2,1));
+
+}

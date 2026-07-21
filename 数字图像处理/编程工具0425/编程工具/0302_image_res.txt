@@ -1,0 +1,9 @@
+void main()
+{
+   byte[,] f = LoadImg();
+
+   ShowImg("f",f);
+
+   print(f.GetLength(0));
+   print(f.GetLength(1));
+}

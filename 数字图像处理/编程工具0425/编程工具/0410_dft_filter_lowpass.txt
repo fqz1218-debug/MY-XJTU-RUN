@@ -1,0 +1,458 @@
+void DFT(Complex[] f, Complex[] F)
+{
+    
+    int N = f.GetLength(0);
+
+    
+    for (int u = 0; u < N; u++)
+    
+    {
+  
+      F[u] = new Complex(0, 0);
+
+        
+        for (int n = 0; n < N; n++)
+        
+        {
+            
+            double _2Pi = 2 * 3.1415926;
+            
+            double a = _2Pi *
+((double)u * n / N);
+            
+            F[u] += f[n] *
+ new Complex(Math.Cos(-a), Math.Sin(-a));
+        
+        }
+
+    }
+
+}
+
+/*
+void DFT_V(Complex[,] f, Complex[,] F)
+{
+   int M = f.GetLength(0);
+   int N = f.GetLength(1);
+
+   Complex[] f_1d = new Complex[N];
+   Complex[] F_1d = new Complex[N];
+
+   for (int x=0;x<M;x++)
+   {
+       for (int y=0;y<N;y++)
+         f_1d[y] = f[x,y]; 
+
+
+       DFT(f_1d,F_1d);
+
+       for (int y=0;y<N;y++)
+         F[x,y] = F_1d[y]; 
+   }
+}
+
+void DFT_H(Complex[,] f, Complex[,] F)
+{
+   int M = f.GetLength(0);
+   int N = f.GetLength(1);
+
+   Complex[] f_1d = new Complex[M];
+   Complex[] F_1d = new Complex[M];
+
+   for (int y=0;y<N;y++)
+   {
+       for (int x=0;x<M;x++)
+         f_1d[x] = f[x,y]; 
+
+
+       DFT(f_1d,F_1d);
+
+       for (int x=0;x<M;x++)
+         F[x,y] = F_1d[x]; 
+   }
+}
+*/
+
+Complex[,] DFT_V(Complex[,] f)
+{
+   int M = f.GetLength(0);
+   int N = f.GetLength(1);
+
+   Complex[,] F = new Complex[M,N];
+
+   Complex[] f_1d = new Complex[N];
+   Complex[] F_1d = new Complex[N];
+
+   for (int x=0;x<M;x++)
+   {
+       for (int y=0;y<N;y++)
+         f_1d[y] = f[x,y]; 
+
+
+       DFT(f_1d,F_1d);
+
+       for (int y=0;y<N;y++)
+         F[x,y] = F_1d[y]; 
+   }
+
+   return F;
+}
+
+Complex[,] DFT_H(Complex[,] f)
+{
+   int M = f.GetLength(0);
+   int N = f.GetLength(1);
+
+   Complex[,] F = new Complex[M,N];
+
+   Complex[] f_1d = new Complex[M];
+   Complex[] F_1d = new Complex[M];
+
+   for (int y=0;y<N;y++)
+   {
+       for (int x=0;x<M;x++)
+         f_1d[x] = f[x,y]; 
+
+
+       DFT(f_1d,F_1d);
+
+       for (int x=0;x<M;x++)
+         F[x,y] = F_1d[x]; 
+   }   
+   return F;
+}
+
+Complex[,] DFT(Complex[,] f)
+{
+   return DFT_H(DFT_V(f));
+}
+
+Complex[,] IDFT(Complex[,]F)
+{
+  int M = F.GetLength(0);
+  int N = F.GetLength(1);
+
+  Complex[,] f = new Complex[M,N];
+
+  for (int u=0;u<M;u++)
+     for (int v=0;v<N;v++)
+     {
+        f[u,v] = Complex.Conjugate(F[u,v])/(M*N);
+     } 
+ 
+  return DFT(f);
+}
+
+Complex[,] ToComplex(byte[,] f)
+{
+    int w = f.GetLength(0);
+    int h = f.GetLength(1);
+
+    Complex[,] g = new Complex[w, h];
+
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            g[x, y] = new Complex(f[x, y], 0);
+        }
+
+    return g;
+}
+
+byte[,] ToByte(Complex[,] f)
+{
+    int w = f.GetLength(0);
+    int h = f.GetLength(1);
+
+    byte[,] g = new byte[w, h];
+
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            g[x, y] = SByte(f[x, y].Real);
+        }
+
+    return g;
+}
+
+byte[,] ToByte128(Complex[,] f)
+{
+    int w = f.GetLength(0);
+    int h = f.GetLength(1);
+
+    byte[,] g = new byte[w, h];
+
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            g[x, y] = SByte(f[x, y].Real+128);
+        }
+
+    return g;
+}
+
+
+byte SByte(double v)
+{
+    if (v > 255) return 255;
+    if (v < 0) return 0;
+    return (byte)v;
+}
+
+double[,] getSpec(Complex[,]F)
+{
+   int M = F.GetLength(0);
+   int N = F.GetLength(1);
+
+   double[,] s = new double[M,N];
+
+   for (int u=0;u<M;u++)
+      for (int v=0;v<N;v++)
+         s[u,v] = F[u,v].Magnitude;
+         // s[u,v] = Math.Log(1+F[u,v].Magnitude);
+
+   return s;
+}
+
+double[,] Norm(double[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   double max = 0;
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         if (f[x,y]>max) max = f[x,y];
+     }   
+
+   double[,] g = new double[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         g[x,y] = f[x,y]/max;
+     }   
+
+   return g;
+}
+
+byte[,] ToByte(double[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         g[x,y] = (byte)(f[x,y]*255);
+     }   
+
+   return g;
+}
+
+byte[,] gamma(byte[,] f,double r)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         g[x,y] = (byte)(Pow(f[x,y]/255.0,r)*255);
+     }   
+
+   return g;
+}
+
+double[,] gamma(double[,] f,double r)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   double[,] g = new double[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         g[x,y] = Pow(f[x,y],r);
+     }   
+
+   return g;
+}
+
+
+Complex[,] FFTShift(Complex[,]f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   Complex[,] g = new Complex[w,h];
+
+   for (int y=0;y<h/2;y++)
+     for (int x=0;x<w/2;x++)
+     {
+         g[x,y] = f[x+w/2,y+h/2];
+         g[x+w/2,y+h/2] = f[x,y];
+
+         g[x+w/2,y] = f[x,y+h/2];
+         g[x,y+h/2] = f[x+w/2,y];
+     }
+
+   return g;
+}
+
+void ShowSpec(string title,Complex[,] F)
+{
+   ShowImg(title,ToByte(gamma(Norm(getSpec(F)),0.15))); 
+}
+
+Complex[,] keep_spec(Complex[,]F)
+{
+    int w = F.GetLength(0);
+    int h = F.GetLength(1);
+
+    Complex[,] g = new Complex[w, h];
+
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            g[x, y] = F[x,y].Magnitude;
+        }
+
+    return g;
+}
+
+Complex[,] keep_phase(Complex[,]F)
+{
+    int w = F.GetLength(0);
+    int h = F.GetLength(1);
+
+    Complex[,] g = new Complex[w, h];
+
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            g[x, y] = 10000*F[x,y]/F[x,y].Magnitude;
+        }
+
+    return g;
+}
+
+Complex[,] filter(Complex[,] F,byte[,] H)
+{
+   int w = F.GetLength(0);
+   int h = F.GetLength(1);
+
+   Complex[,] G = new Complex[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         G[x,y] = (F[x,y]*(H[x,y]/255.0));
+     }   
+
+   return G;
+}
+
+byte[,] low_pass(double w0,int w,int h)
+{
+   byte[,] H = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         if ((x-w/2)*(x-w/2)+(y-h/2)*(y-h/2)<w0*w0)
+            H[x,y] = 255;
+     }   
+
+   return H;
+}
+
+byte[,] g_lowpass(double w0,int w,int h)
+{
+   byte[,] H = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         H[x,y] = (byte)(Exp(-((x-w/2)*(x-w/2)+(y-h/2)*(y-h/2))/(2.0*w0*w0))*255);
+     }   
+
+   return H;
+}
+
+
+byte[,] high_pass(double w0,int w,int h)
+{
+   byte[,] H = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         if ((x-w/2)*(x-w/2)+(y-h/2)*(y-h/2)>=w0*w0)
+            H[x,y] = 255;
+     }   
+
+   return H;
+}
+
+
+byte[,] high_pass_g(double w0,int w,int h)
+{
+   byte[,] H = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         //if ((x-w/2)*(x-w/2)+(y-h/2)*(y-h/2)<w0*w0)
+         H[x,y] = (byte)(255-Exp(-((x-w/2)*(x-w/2)+(y-h/2)*(y-h/2))/(2*w0*w0))*255);
+     }   
+
+   return H;
+}
+
+
+void main()
+{
+
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   Complex[,] cf = ToComplex(f);
+
+   Complex[,] F = DFT(cf);
+
+   F = FFTShift(F);
+
+   // ShowImg("spec of F",ToByte(gamma(Norm(getSpec(F)),0.2))); 
+   ShowSpec("F", F);
+
+
+   byte[,] H = low_pass(10,w,h);
+   // byte[,] H = g_lowpass(10,w,h);
+
+   // byte[,] H = high_pass_g(16,w,h);
+   // byte[,] H = high_pass(16,w,h);
+   ShowImg("H",H);
+
+   Complex[,] G = filter(F,H);   
+
+   ShowSpec("G", G);
+
+   G = FFTShift(G);
+
+   G = IDFT(G);
+   byte[,] g = ToByte(G);
+
+   ShowImg("g",g);   
+}
+

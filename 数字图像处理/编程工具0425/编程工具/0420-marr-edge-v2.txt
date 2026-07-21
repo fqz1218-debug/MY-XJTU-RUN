@@ -1,0 +1,133 @@
+float[,] to_float(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   float[,] g = new float[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=f[x,y];
+
+   return g;
+}
+
+byte[,] to_byte(float[,] f,int off)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=S(f[x,y]+off);
+
+   return g;
+}
+
+
+float[,] filter2D(float[,] f,float[,]mask)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   float[,] g = new float[w,h];
+
+   int M = mask.GetLength(0)/2;
+   int N = mask.GetLength(1)/2;
+
+   for (int y=N;y<h-N;y++)
+     for (int x=M;x<w-M;x++)
+     { 
+       float r = 0;
+       for (int m=-M;m<=M;m++)
+          for (int n=-N;n<=N;n++)
+          {
+            r+=f[x+m,y+n]*mask[M+m,N+n];
+           }
+       g[x,y]=r;
+      }
+
+   return g;
+}
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+
+float[,] lap_4P()
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] = 0;    mask[1,0] =-1;   mask[2,0] = 0;  
+   mask[0,1] =-1;    mask[1,1] = 4;   mask[2,1] =-1;  
+   mask[0,2] = 0;    mask[1,2] =-1;   mask[2,2] = 0;  
+
+   return mask;
+}
+
+byte[,] zero_cross(float[,] f,double thr)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=1;y<h-1;y++)
+     for (int x=1;x<w-1;x++)
+     {
+         if (f[x,y]<0) continue;
+         if (f[x-1,y]*f[x+1,y]<0 && Abs(f[x-1,y]-f[x+1,y])>thr ) g[x,y] = 255;
+         if (f[x,y-1]*f[x,y+1]<0 && Abs(f[x,y-1]-f[x,y+1])>thr ) g[x,y] = 255;
+     }
+
+   return g;
+}
+
+float[,] g_blur(double r)
+{
+   int M = (int)(r*3);
+   int N = M;
+
+   float[,] mask = new float[2*M+1,2*N+1];
+
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        mask[M+m,N+n] = (float)Exp(-(m*m+n*n)/(2*r*r));
+
+   float s = 0;
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        s += mask[M+m,N+n];
+
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        mask[M+m,N+n] /= s;
+
+   return mask;
+}
+
+
+void main()
+{
+   byte[,] bf = LoadImg();
+   ShowImg("bf",bf);
+
+   float[,] f = to_float(bf);
+
+   f = filter2D(f,g_blur(3));
+   ShowImg("blur of f",to_byte(f,0));
+
+   float[,] lap = filter2D(f,lap_4P());
+   ShowImg("lap",to_byte(lap,128));
+
+   byte[,] edge = zero_cross(lap,0.5);
+   ShowImg("edge",edge);
+
+}

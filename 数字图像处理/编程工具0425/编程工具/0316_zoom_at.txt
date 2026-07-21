@@ -1,0 +1,221 @@
+byte[,] FM(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w*2,h*2];
+
+
+   for (int v=0;v<h;v++)
+     for (int u=0;u<w;u++)
+     {
+        int x = u*2;
+        int y = v*2;
+
+        g[x,y] = f[u,v]; 
+     }
+
+   return g;
+}
+
+struct Matrix
+{
+   public float m11;
+   public float m12;
+
+   public float m21;
+   public float m22;
+
+   public float m31;
+   public float m32;
+}
+
+
+byte[,] ST(byte[,] f,Matrix T)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        int u = (int)(x*T.m11+y*T.m21+T.m31);
+        int v = (int)(x*T.m12+y*T.m22+T.m32);
+
+        if (u>=0 && u<w && v>=0 && v<h)
+           g[x,y] = f[u,v]; 
+     }
+
+   return g;
+}
+
+Matrix mk_I()
+{
+  Matrix T = new Matrix();
+
+  T.m11 = 1;    T.m12 = 0; 
+  T.m21 = 0;    T.m22 = 1; 
+  T.m31 = 0;    T.m32 = 0; 
+
+  return T;
+}
+
+Matrix flipH(float w,float h)
+{
+  Matrix T = new Matrix();
+
+  T.m11 =-1;    T.m12 = 0; 
+  T.m21 = 0;    T.m22 = 1; 
+  T.m31 =w-1;   T.m32 = 0; 
+
+  return T;
+}
+
+Matrix flipV(float w,float h)
+{
+  Matrix T = new Matrix();
+
+  T.m11 = 1;    T.m12 = 0; 
+  T.m21 = 0;    T.m22 =-1; 
+  T.m31 = 0;    T.m32 =h-1; 
+
+  return T;
+}
+
+Matrix translate(float dx,float dy)
+{
+  Matrix T = new Matrix();
+
+  T.m11 = 1;    T.m12 = 0; 
+  T.m21 = 0;    T.m22 = 1; 
+  T.m31 =-dx;   T.m32 =-dy; 
+
+  return T;
+}
+
+Matrix scale(float sx,float sy)
+{
+  Matrix T = new Matrix();
+
+  T.m11 =1/sx;  T.m12 = 0; 
+  T.m21 = 0;    T.m22 =1/sy; 
+  T.m31 = 0;    T.m32 = 0; 
+
+  return T;
+}
+
+Matrix scale_at(float x0,float y0,float s)
+{
+  Matrix T = new Matrix();
+
+  T.m11 =1/s;   T.m12 = 0; 
+  T.m21 = 0;    T.m22 =1/s; 
+  T.m31 =x0-x0/s;    T.m32 = y0-y0/s; 
+
+  return T;
+}
+
+byte[,] zoom_at(byte[,] f,float x0,float y0,float s)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        int u = (int)(x/s+x0-x0/s);
+        int v = (int)(y/s+y0-y0/s);
+
+        if (u>=0 && u<w && v>=0 && v<h)
+           g[x,y] = f[u,v]; 
+     }
+
+   return g;
+}
+
+byte[,] local_zoom_at(byte[,] f,float x0,float y0,float R,float s)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        if ((x-x0)*(x-x0)+(y-y0)*(y-y0)>R*R)
+       {
+          g[x,y] = f[x,y]; 
+       }  
+       else
+       {
+        int u = (int)(x/s+x0-x0/s);
+        int v = (int)(y/s+y0-y0/s);
+
+        if (u>=0 && u<w && v>=0 && v<h)
+           g[x,y] = f[u,v]; 
+       } 
+     }
+
+   return g;
+}
+
+byte[,] local_zoom_at_v2(byte[,] f,float x0,float y0,float R,float S)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        double r = Sqrt((x-x0)*(x-x0)+(y-y0)*(y-y0));
+        double t = r/R;
+
+        if (t>1)
+       {
+          g[x,y] = f[x,y]; 
+       }  
+       else
+       {
+        double s = S*(1-t)+1*t;
+                    
+        int u = (int)(x/s+x0-x0/s);
+        int v = (int)(y/s+y0-y0/s);
+
+        if (u>=0 && u<w && v>=0 && v<h)
+           g[x,y] = f[u,v]; 
+       } 
+     }
+
+   return g;
+}
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   // ShowImg("I()",ST(f,mk_I()));
+
+   // ShowImg("FlipV",ST(f,flipV(w,h)));
+   // ShowImg("FlipH",ST(f,flipH(w,h)));
+
+   // ShowImg("translate",ST(f,translate(100,50)));
+   // ShowImg("scale",ST(f,scale(2,2)));
+
+   ShowImg("scale",ST(f,scale_at(w/2,h/2,4)));
+
+//   ShowImg("scale 2 at ",local_zoom_at_v2(f,132,132,32,2));
+//   ShowImg("scale 0.5 at",local_zoom_at_v2(f,132,132,32,0.5f));
+
+}

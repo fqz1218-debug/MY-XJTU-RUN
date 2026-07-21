@@ -1,0 +1,126 @@
+byte[,] FM(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w*2,h*2];
+
+
+   for (int v=0;v<h;v++)
+     for (int u=0;u<w;u++)
+     {
+        int x = u*2;
+        int y = v*2;
+
+        g[x,y] = f[u,v]; 
+     }
+
+   return g;
+}
+
+struct Matrix
+{
+   public float m11;
+   public float m12;
+
+   public float m21;
+   public float m22;
+
+   public float m31;
+   public float m32;
+}
+
+
+byte[,] ST(byte[,] f,Matrix T)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        int u = (int)(x*T.m11+y*T.m21+T.m31);
+        int v = (int)(x*T.m12+y*T.m22+T.m32);
+
+        if (u>=0 && u<w && v>=0 && v<h)
+           g[x,y] = f[u,v]; 
+     }
+
+   return g;
+}
+
+Matrix mk_I()
+{
+  Matrix T = new Matrix();
+
+  T.m11 = 1;    T.m12 = 0; 
+  T.m21 = 0;    T.m22 = 1; 
+  T.m31 = 0;    T.m32 = 0; 
+
+  return T;
+}
+
+Matrix flipH(float w,float h)
+{
+  Matrix T = new Matrix();
+
+  T.m11 =-1;    T.m12 = 0; 
+  T.m21 = 0;    T.m22 = 1; 
+  T.m31 =w-1;   T.m32 = 0; 
+
+  return T;
+}
+
+Matrix flipV(float w,float h)
+{
+  Matrix T = new Matrix();
+
+  T.m11 = 1;    T.m12 = 0; 
+  T.m21 = 0;    T.m22 =-1; 
+  T.m31 = 0;    T.m32 =h-1; 
+
+  return T;
+}
+
+Matrix translate(float dx,float dy)
+{
+  Matrix T = new Matrix();
+
+  T.m11 = 1;    T.m12 = 0; 
+  T.m21 = 0;    T.m22 = 1; 
+  T.m31 =-dx;   T.m32 =-dy; 
+
+  return T;
+}
+
+Matrix scale(float sx,float sy)
+{
+  Matrix T = new Matrix();
+
+  T.m11 =1/sx;  T.m12 = 0; 
+  T.m21 = 0;    T.m22 =1/sy; 
+  T.m31 = 0;    T.m32 = 0; 
+
+  return T;
+}
+
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   // ShowImg("I()",ST(f,mk_I()));
+
+   // ShowImg("FlipV",ST(f,flipV(w,h)));
+   // ShowImg("FlipH",ST(f,flipH(w,h)));
+
+   // ShowImg("translate",ST(f,translate(100,50)));
+   ShowImg("scale",ST(f,scale(2,2)));
+}

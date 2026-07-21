@@ -1,0 +1,49 @@
+byte[,] add(byte[,] f,int c)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=S(f[x,y]+c);
+
+   return g;
+}
+
+byte[,] mul(byte[,] f,double k)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=S(f[x,y]*k);
+
+   return g;
+}
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   ShowImg("+40",add(f,40));
+   ShowImg("-40",add(f,-40));
+
+   ShowImg("*1.5",mul(f,1.5));
+   ShowImg("*0.75",mul(f,0.75));
+
+}

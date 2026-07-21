@@ -1,0 +1,60 @@
+byte[,] add_noise(byte[,] f,int level)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]= S(f[x,y]+((Rand()-0.5)*2*level));
+         
+   return g;
+}
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+byte[,] averaging(byte[][,] fs)
+{
+  int K = fs.Length;
+
+   int w = fs[0].GetLength(0);
+   int h = fs[0].GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         int S = 0;
+        for (int i=0;i<K;i++)
+           S += fs[i][x,y];
+
+        g[x,y] = (byte)(S/K);
+     }
+         
+   return g;
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   int K = 5;
+   byte[][,] fs = new byte[K][,];
+
+   for (int i=0;i<K;i++)
+   {
+      fs[i] = add_noise(f,40);
+      ShowImg("gs"+i.ToString(),fs[i]);
+   }
+
+   byte[,] g = averaging(fs);
+   ShowImg("g",g);
+}

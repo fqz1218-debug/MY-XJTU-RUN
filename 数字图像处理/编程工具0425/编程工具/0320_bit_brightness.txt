@@ -1,0 +1,27 @@
+byte[,] img_proc(byte[,] f,int thr)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        if (f[x,y]>thr) g[x,y]=255;
+        else g[x,y] = 0; 
+
+   return g;
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   // byte[,] g = img_proc(f);
+   // ShowImg("g",g);
+
+   ShowImg("thr=128",img_proc(f,128));
+   ShowImg("thr=64",img_proc(f,64));
+}

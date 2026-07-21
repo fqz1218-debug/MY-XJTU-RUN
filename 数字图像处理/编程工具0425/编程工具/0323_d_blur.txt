@@ -1,0 +1,96 @@
+byte[,] filter(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=1;y<h-1;y++)
+     for (int x=1;x<w-1;x++)
+        g[x,y]=S(-f[x,y-1]-f[x-1,y]+5*f[x,y]-f[x+1,y]-f[x,y+1]);
+
+   return g;
+}
+
+byte[,] filter2D(byte[,] f,float[,]mask)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   int M = mask.GetLength(0)/2;
+   int N = mask.GetLength(1)/2;
+
+   for (int y=N;y<h-N;y++)
+     for (int x=M;x<w-M;x++)
+     { 
+       float r = 0;
+       for (int m=-M;m<=M;m++)
+          for (int n=-N;n<=N;n++)
+          {
+            r+=f[x+m,y+n]*mask[M+m,N+n];
+           }
+       g[x,y]=S(r);
+      }
+
+   return g;
+}
+
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+float[,] blurMxN(int M,int N)
+{
+   float[,] mask = new float[2*M+1,2*N+1];
+
+   float s = (2*M+1)*(2*N+1);
+
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        mask[M+m,N+n] = 1.0f/s;
+
+   return mask;
+}
+
+float[,] blur45(int M)
+{
+   float[,] mask = new float[2*M+1,2*M+1];
+
+   float s = 2*M+1;
+
+   for (int m=-M;m<=M;m++)
+      mask[M+m,M+m] = 1/s;
+
+   return mask;
+}
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   /*
+   byte[,] g = filter(f);
+   ShowImg("g",g);
+   float[,] mask = new float[3,3];
+   mask[0,0] = 0;    mask[1,0] =-1;   mask[2,0] = 0;  
+   mask[0,1] =-1;    mask[1,1] = 5;   mask[2,1] =-1;  
+   mask[0,2] = 0;    mask[1,2] =-1;   mask[2,2] = 0;  
+
+   ShowImg("g~",filter2D(f,mask));
+   */
+
+  ShowImg("blur 11x1",filter2D(f,blurMxN(5,0)));
+  ShowImg("blur 1x11",filter2D(f,blurMxN(0,5)));
+
+  ShowImg("blur 45",filter2D(f,blur45(5)));
+
+}

@@ -1,0 +1,121 @@
+Complex DFT(Complex[,]f,int u,int v)
+{
+  int M = f.GetLength(0);
+  int N = f.GetLength(1);
+
+  Complex ret = new Complex(0,0);
+
+  for (int x=0;x<M;x++)
+     for (int y=0;y<N;y++)
+     {
+        double a = -2*3.1416*((double)u*x/M+(double)v*y/N);
+        ret += f[x,y] * new Complex(Cos(a),Sin(a));
+     } 
+ 
+  return ret;
+}
+
+Complex[,] DFT(Complex[,]f)
+{
+  int M = f.GetLength(0);
+  int N = f.GetLength(1);
+
+  Complex[,] F = new Complex[M,N];
+
+  for (int u=0;u<M;u++)
+     for (int v=0;v<N;v++)
+     {
+        F[u,v] = DFT(f,u,v);
+     } 
+ 
+  return F;
+}
+
+Complex IDFT(Complex[,]f,int u,int v)
+{
+  int M = f.GetLength(0);
+  int N = f.GetLength(1);
+
+  Complex ret = new Complex(0,0);
+
+  for (int x=0;x<M;x++)
+     for (int y=0;y<N;y++)
+     {
+        double a = 2*3.1416*((double)u*x/M+(double)v*y/N);
+        ret += f[x,y] * new Complex(Cos(a),Sin(a));
+     } 
+ 
+  return ret/(M*N);
+}
+
+Complex[,] IDFT(Complex[,]f)
+{
+  int M = f.GetLength(0);
+  int N = f.GetLength(1);
+
+  Complex[,] F = new Complex[M,N];
+
+  for (int u=0;u<M;u++)
+     for (int v=0;v<N;v++)
+     {
+        F[u,v] = IDFT(f,u,v);
+     } 
+ 
+  return F;
+}
+
+Complex[,] ToComplex(byte[,] f)
+{
+    int w = f.GetLength(0);
+    int h = f.GetLength(1);
+
+    Complex[,] g = new Complex[w, h];
+
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            g[x, y] = new Complex(f[x, y], 0);
+        }
+
+    return g;
+}
+
+byte[,] ToByte(Complex[,] f)
+{
+    int w = f.GetLength(0);
+    int h = f.GetLength(1);
+
+    byte[,] g = new byte[w, h];
+
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++)
+        {
+            g[x, y] = SByte(f[x, y].Real);
+        }
+
+    return g;
+}
+
+byte SByte(double v)
+{
+    if (v > 255) return 255;
+    if (v < 0) return 0;
+    return (byte)v;
+}
+
+void main()
+{
+
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   Complex[,] cf = ToComplex(f);
+
+   Complex[,] F = DFT(cf);
+
+   Complex[,] G = IDFT(F);
+   byte[,] g = ToByte(G);
+
+   ShowImg("g",g);   
+}
+

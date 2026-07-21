@@ -1,0 +1,110 @@
+
+void add_noise(byte[,] f,int s_count,int p_count)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   for (int n=0;n<s_count;n++)
+   {
+      int x = (int)(Rand()*w);
+      int y = (int)(Rand()*h);
+
+      f[x,y] = 255;
+   }
+
+   for (int n=0;n<p_count;n++)
+   {
+      int x = (int)(Rand()*w);
+      int y = (int)(Rand()*h);
+
+      f[x,y] = 0;
+   }
+}
+
+void order(byte[] a)
+{
+   int len = a.Length;
+
+   for (int i=0;i<len-1;i++)
+      for (int j=i+1;j<len;j++)  
+          if (a[i]>a[j])
+          {
+             byte temp = a[i];
+             a[i] = a[j];
+             a[j] = temp; 
+          }  
+ 
+}
+
+byte media(byte[] a)
+{
+   order(a);
+
+   return a[a.Length/2];
+}
+
+/*
+byte[,] media_filter(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=1;y<h-1;y++)
+     for (int x=1;x<w-1;x++)
+        g[x,y] = media(new byte[5]{ f[x,y],f[x-1,y],f[x+1,y],f[x,y-1],f[x,y+1]}); 
+
+   return g;
+}
+*/
+
+byte[,] media_filter(byte[,] f,int M,int N)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   byte[] a = new byte[1+2*M+2*N];
+
+   for (int y=N;y<h-N;y++)
+     for (int x=M;x<w-M;x++)
+     {
+        int i = 0; 
+        a[i++] = f[x,y];
+        
+        for (int j=1;j<=M;j++) { a[i++] = f[x+j,y]; a[i++] = f[x-j,y]; }   
+        for (int j=1;j<=N;j++) { a[i++] = f[x,y+j]; a[i++] = f[x,y-j]; }   
+        
+        
+
+        g[x,y] = media(a); 
+     }
+
+   return g;
+}
+
+
+void main()
+{
+
+   byte[] a = new byte[5] { 3,2,1,5,4};
+
+   print(media(a));
+
+
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   add_noise(f,200,100);
+   ShowImg("noise f",f);
+
+   ShowImg("media",media_filter(f,2,2));
+
+
+   // byte[,] g = img_proc(f);
+   // ShowImg("g",g);
+//   ShowImg("thr=128",img_proc(f,128));
+//   ShowImg("thr=64",img_proc(f,64));
+}

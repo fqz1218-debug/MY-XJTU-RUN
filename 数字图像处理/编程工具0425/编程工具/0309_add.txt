@@ -1,0 +1,26 @@
+byte[,] add(byte[,] f1,byte[,] f2)
+{
+   int w = f1.GetLength(0);
+   int h = f1.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=(byte)(f1[x,y]+f2[x,y]);
+        
+   return g;
+}
+
+void main()
+{
+   byte[,] f1 = LoadImg();
+   ShowImg("f1",f1);
+
+   byte[,] f2 = LoadImg();
+   ShowImg("f2",f2);
+
+   ShowImg("f1+f2",add(f1,f2));
+
+}

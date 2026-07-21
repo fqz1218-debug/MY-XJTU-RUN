@@ -1,0 +1,23 @@
+byte[,] not(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=(byte)(255-f[x,y]);
+        
+   return g;
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   ShowImg("not(f)",not(f));
+
+}

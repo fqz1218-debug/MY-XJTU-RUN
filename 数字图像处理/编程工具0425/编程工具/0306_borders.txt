@@ -1,0 +1,40 @@
+byte[,] get_inner_border(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=1;y<h-1;y++)
+     for (int x=1;x<w-1;x++)
+        if (f[x,y]==255 && (f[x-1,y]==0 || f[x+1,y]==0 || f[x,y-1]==0 || f[x,y+1]==0 ))
+           g[x,y] = 255; 
+
+   return g;
+}
+
+byte[,] get_outer_border(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=1;y<h-1;y++)
+     for (int x=1;x<w-1;x++)
+        if (f[x,y]==0 && (f[x-1,y]==255 || f[x+1,y]==255 || f[x,y-1]==255 || f[x,y+1]==255 ))
+           g[x,y] = 255; 
+
+   return g;
+}
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   ShowImg("inner_border",get_inner_border(f));
+   ShowImg("outer_border",get_outer_border(f));
+
+}

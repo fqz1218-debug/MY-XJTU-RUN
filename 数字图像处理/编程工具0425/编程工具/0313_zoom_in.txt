@@ -1,0 +1,49 @@
+byte[,] FM(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w*2,h*2];
+
+
+   for (int v=0;v<h;v++)
+     for (int u=0;u<w;u++)
+     {
+        int x = u*2;
+        int y = v*2;
+
+        g[x,y] = f[u,v]; 
+     }
+
+   return g;
+}
+
+byte[,] IM(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w*2,h*2];
+
+   for (int y=0;y<h*2;y++)
+     for (int x=0;x<w*2;x++)
+     {
+        int u = x/2;
+        int v = y/2;
+
+        g[x,y] = f[u,v]; 
+     }
+
+   return g;
+}
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   ShowImg("FM",FM(f));
+   ShowImg("IM",IM(f));
+
+}

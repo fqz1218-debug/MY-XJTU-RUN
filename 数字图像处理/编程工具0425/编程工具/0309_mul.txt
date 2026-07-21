@@ -1,0 +1,72 @@
+byte[,] mul(byte[,] f1,byte[,] f2)
+{
+   int w = f1.GetLength(0);
+   int h = f1.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+         g[x,y]=(byte)(f1[x,y]*(f2[x,y]/255.0));
+         // g[x,y]=(byte)(f1[x,y]*f2[x,y]/255);
+        
+   return g;
+}
+
+    byte[,] GetLighting(int w, int h)
+    {
+        // 校验输入参数合法性
+        if (w <= 0 || h <= 0)
+        {
+            throw new ArgumentException("宽度和高度必须大于0");
+        }
+
+        byte[,] lightingArray = new byte[h, w];
+        // 计算中心点坐标（浮点型保证精度）
+        float centerX = (w - 1) / 2f;
+        float centerY = (h - 1) / 2f;
+        // 计算到中心点的最大距离（用于归一化）
+        float maxDistance = (float)Math.Sqrt(centerX * centerX + centerY * centerY);
+
+        // 遍历每个像素
+        for (int y = 0; y < h; y++)
+        {
+            for (int x = 0; x < w; x++)
+            {
+                // 计算当前像素到中心点的欧式距离
+                float dx = x - centerX;
+                float dy = y - centerY;
+                float distance = (float)Math.Sqrt(dx * dx + dy * dy);
+
+                // 归一化距离（0-1），再映射到 0-255（距离越远，值越小）
+                float normalized = 1 - (distance / maxDistance);
+                int value = (int)Math.Round(normalized * 255);
+
+                // 确保值在字节的合法范围（0-255）
+                value = S(value);
+                lightingArray[y, x] = (byte)value;
+            }
+        }
+
+        return lightingArray;
+    }
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+void main()
+{
+   byte[,] f1 = LoadImg();
+   ShowImg("f1",f1);
+
+   byte[,] f2 = GetLighting(f1.GetLength(0),f1.GetLength(1));
+   ShowImg("f2",f2);
+
+   ShowImg("f1*f2",mul(f1,f2));
+
+}

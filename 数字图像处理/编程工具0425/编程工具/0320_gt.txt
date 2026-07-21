@@ -1,0 +1,90 @@
+byte[,] not(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=(byte)(255-f[x,y]);
+        
+   return g;
+}
+
+byte[,] Gamma(byte[,] f,double r)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=(byte)(255*Pow(f[x,y]/255.0,r));
+        
+   return g;
+}
+
+byte[,] GT(byte[,] f,byte[] tab)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=tab[f[x,y]];
+        
+   return g;
+}
+
+
+byte[,] Gamma_v2(byte[,] f,double r)
+{
+   byte[] tab = new byte[256];
+   for (int n=0;n<256;n++)
+      tab[n] = (byte)(255*Pow(n/255.0,r));
+       
+   return GT(f,tab);
+}
+
+byte[,] CS(byte[,]f,double k)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=S((f[x,y]-128)*k+128);
+        
+   return g;
+}
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   // ShowImg("not(f)",not(f));
+
+   // ShowImg("gamma=1",Gamma(f,1));
+   ShowImg("gamma=2",Gamma(f,2));
+   ShowImg("gamma=0.5",Gamma(f,0.5));
+   ShowImg("gamma=0.5,v2",Gamma_v2(f,0.5));
+
+  
+   ShowImg("cs,k=0.5",CS(f,0.5));
+   ShowImg("cs,k=2",CS(f,2));
+}

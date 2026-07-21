@@ -1,0 +1,56 @@
+byte[,] erosion(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=1;y<h-1;y++)
+     for (int x=1;x<w-1;x++)
+        if (f[x,y]==255 && f[x-1,y]==255 && f[x+1,y]==255 && f[x,y-1]==255 && f[x,y+1]==255)                g[x,y]=255;
+        else g[x,y] = 0; 
+
+   return g;
+}
+
+byte[,] dilation(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=1;y<h-1;y++)
+     for (int x=1;x<w-1;x++)
+        if (f[x,y]==255 || f[x-1,y]==255 || f[x+1,y]==255 || f[x,y-1]==255 || f[x,y+1]==255)                g[x,y]=255;
+        else g[x,y] = 0; 
+
+   return g;
+}
+
+byte[,] open(byte[,] f)
+{
+   return dilation(erosion(f));
+}
+
+byte[,] close(byte[,] f)
+{
+   return erosion(dilation(f));
+}
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   ShowImg("erosion",erosion(f));
+   ShowImg("dilation",dilation(f));
+
+   ShowImg("open",open(f));
+   ShowImg("close",close(f));
+
+   ShowImg("close+open",open(close(f)));
+}

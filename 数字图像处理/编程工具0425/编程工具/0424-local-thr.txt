@@ -1,0 +1,152 @@
+int get_m1(byte[,] f,int thr)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   int sum = 0;
+   int count = 0;
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        if (f[x,y]>thr) 
+        {
+           sum+=f[x,y];
+           count++;
+
+        }  
+     }
+
+   if (count!=0) return sum/count;
+   return -1; 
+}
+
+int get_m2(byte[,] f,int thr)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   int sum = 0;
+   int count = 0;
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        if (f[x,y]<=thr) 
+        {
+           sum+=f[x,y];
+           count++;
+
+        }  
+     }
+
+   if (count!=0) return sum/count;
+   return -1; 
+
+}
+
+
+int get_thr(byte[,] f,int thr0)
+{
+   while(true)
+   {
+      int m1 = get_m1(f,thr0);
+      int m2 = get_m2(f,thr0);
+
+      int thr1 = (m1+m2)/2;
+
+      //print(thr1);
+
+      if (Abs(thr1-thr0)<5) return thr1;
+
+      thr0 = thr1;
+   }
+
+}
+
+
+byte[,] img_seg(byte[,] f,int thr)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        if (f[x,y]>thr) g[x,y]=255;
+        else g[x,y] = 0; 
+
+   return g;
+}
+
+int get_mean(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   int sum = 0;
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+           sum+=f[x,y];
+     }
+
+   return sum/(w*h);
+}
+
+byte[,] get_sub_img(byte[,]f,int cen_x,int cen_y,int M)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   int x0 = cen_x-M;
+   int x1 = cen_x+M;
+
+   int y0 = cen_y-M;
+   int y1 = cen_y+M;
+
+   if (x0<0) x0 = 0;
+   if (x1>w-1) x1 = w-1;
+
+   if (y0<0) y0 = 0;
+   if (y1>h-1) y1 = h-1;
+
+   int ow = x1-x0+1;
+   int oh = y1-y0+1;
+
+   byte[,] g = new byte[ow,oh];
+
+   for (int y=0;y<oh;y++)
+     for (int x=0;x<ow;x++)
+        g[x,y] = f[x0+x,y0+y];
+
+   return g;
+}
+
+byte[,] local_thr(byte[,]f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        byte[,] sub = get_sub_img(f,x,y,20);
+        int thr0 = get_mean(sub);
+        int thr = get_thr(sub,thr0);        
+
+        if (f[x,y]>thr) g[x,y] = 255;
+     }
+ 
+   return g;
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   ShowImg("local thr",local_thr(f));
+  
+}

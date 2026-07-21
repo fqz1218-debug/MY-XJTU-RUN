@@ -1,0 +1,48 @@
+float[,] emboss_mask()
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] = -1;   mask[1,0] = -1;   mask[2,0] =  0;
+   mask[0,1] = -1;   mask[1,1] =  0;   mask[2,1] =  1;
+   mask[0,2] =  0;   mask[1,2] =  1;   mask[2,2] =  1;
+
+   return mask;
+}
+
+byte[,] emboss2D(byte[,] f, float[,] mask)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   int M = mask.GetLength(0) / 2;
+   int N = mask.GetLength(1) / 2;
+
+   for (int y = N; y < h - N; y++)
+      for (int x = M; x < w - M; x++)
+      {
+         float r = 0;
+
+         for (int m = -M; m <= M; m++)
+            for (int n = -N; n <= N; n++)
+            {
+               r += f[x + m, y + n] * mask[M + m, N + n];
+            }
+
+         // 浮雕结果需要加128，使负值和正值都能显示为灰度
+         g[x,y] = S(r + 128);
+      }
+
+   return g;
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+
+   ShowImg("g",emboss2D(f,emboss_mask));
+
+}

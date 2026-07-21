@@ -1,0 +1,174 @@
+byte[,] filter(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=1;y<h-1;y++)
+     for (int x=1;x<w-1;x++)
+        g[x,y]=S(-f[x,y-1]-f[x-1,y]+5*f[x,y]-f[x+1,y]-f[x,y+1]);
+
+   return g;
+}
+
+byte[,] filter2D(byte[,] f,float[,]mask)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   int M = mask.GetLength(0)/2;
+   int N = mask.GetLength(1)/2;
+
+   for (int y=N;y<h-N;y++)
+     for (int x=M;x<w-M;x++)
+     { 
+       float r = 0;
+       for (int m=-M;m<=M;m++)
+          for (int n=-N;n<=N;n++)
+          {
+            r+=f[x+m,y+n]*mask[M+m,N+n];
+           }
+       g[x,y]=S(r);
+      }
+
+   return g;
+}
+
+byte[,] highpass2D(byte[,] f,float[,]mask)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   int M = mask.GetLength(0)/2;
+   int N = mask.GetLength(1)/2;
+
+   for (int y=N;y<h-N;y++)
+     for (int x=M;x<w-M;x++)
+     { 
+       float r = 0;
+       for (int m=-M;m<=M;m++)
+          for (int n=-N;n<=N;n++)
+          {
+            r+=f[x+m,y+n]*mask[M+m,N+n];
+           }
+       g[x,y]=S(r+128);
+      }
+
+   return g;
+}
+
+
+
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+float[,] blurMxN(int M,int N)
+{
+   float[,] mask = new float[2*M+1,2*N+1];
+
+   float s = (2*M+1)*(2*N+1);
+
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        mask[M+m,N+n] = 1.0f/s;
+
+   return mask;
+}
+
+
+float[,] lap_4N()
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] = 0;    mask[1,0] = 1;   mask[2,0] = 0;  
+   mask[0,1] = 1;    mask[1,1] =-4;   mask[2,1] = 1;  
+   mask[0,2] = 0;    mask[1,2] = 1;   mask[2,2] = 0;  
+
+   return mask;
+}
+
+float[,] lap_4P()
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] = 0;    mask[1,0] =-1;   mask[2,0] = 0;  
+   mask[0,1] =-1;    mask[1,1] = 4;   mask[2,1] =-1;  
+   mask[0,2] = 0;    mask[1,2] =-1;   mask[2,2] = 0;  
+
+   return mask;
+}
+
+float[,] lap_8N()
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] = 1;    mask[1,0] = 1;   mask[2,0] = 1;  
+   mask[0,1] = 1;    mask[1,1] =-8;   mask[2,1] = 1;  
+   mask[0,2] = 1;    mask[1,2] = 1;   mask[2,2] = 1;  
+
+   return mask;
+}
+
+float[,] lap_8P()
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] =-1;    mask[1,0] =-1;   mask[2,0] =-1;  
+   mask[0,1] =-1;    mask[1,1] = 8;   mask[2,1] =-1;  
+   mask[0,2] =-1;    mask[1,2] =-1;   mask[2,2] =-1;  
+
+   return mask;
+}
+
+float[,] sharp(float k)
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] =0;    mask[1,0] =-k;      mask[2,0] =0;  
+   mask[0,1] =-k;   mask[1,1] =1+4*k;   mask[2,1] =-k;  
+   mask[0,2] =0;    mask[1,2] =-k;      mask[2,2] =0;  
+
+   return mask;
+}
+
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   /*
+   byte[,] g = filter(f);
+   ShowImg("g",g);
+   float[,] mask = new float[3,3];
+   mask[0,0] = 0;    mask[1,0] =-1;   mask[2,0] = 0;  
+   mask[0,1] =-1;    mask[1,1] = 5;   mask[2,1] =-1;  
+   mask[0,2] = 0;    mask[1,2] =-1;   mask[2,2] = 0;  
+
+   ShowImg("g~",filter2D(f,mask));
+
+
+  ShowImg("lap 4N",highpass2D(f,lap_4N()));
+  ShowImg("lap 4P",highpass2D(f,lap_4P()));
+  ShowImg("lap 8N",highpass2D(f,lap_8N()));
+  ShowImg("lap 8P",highpass2D(f,lap_8P()));
+  */
+
+  ShowImg("sharp，r=0.25",filter2D(f,sharp(0.25f)));
+  ShowImg("sharp，r=0.5",filter2D(f,sharp(0.5f)));
+  ShowImg("sharp，r=1",filter2D(f,sharp(1)));
+
+
+}

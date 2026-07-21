@@ -1,0 +1,54 @@
+byte[,] expand(byte[,] f,int bw)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w+2*bw,h+2*bw];
+
+
+   for (int v=0;v<h;v++)
+     for (int u=0;u<w;u++)
+     {
+        int x = u+bw;
+        int y = v+bw;
+
+        g[x,y] = f[u,v]; 
+     }
+
+   return g;
+}
+
+byte[,] IM(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+        if ((x-255)*(x-255)+(y-127.5)*(y-127.5)<=128*128) g[x,y] = 255;
+        else
+        { 
+            double tx = Sqrt(127.5*127.5-(y-127.5)*(y-127.5));
+            int u = (int)(255*x/(255-tx));
+            int v = y;
+
+            g[x,y] = f[u,v]; 
+        }
+     }
+
+   return g;
+}
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   ShowImg("expand",expand(f,10));
+   ShowImg("IM",IM(f));
+
+}

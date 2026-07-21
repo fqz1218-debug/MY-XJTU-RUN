@@ -1,0 +1,95 @@
+void Label(byte [,] f, int x, int y, byte L)
+{
+  f[x,y] = L;
+
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+  
+  if (x+1<w && f[x+1,y]==255) Label(f,x+1,y,L);
+  if (x-1>=0 && f[x-1,y]==255) Label(f,x-1,y,L);
+  if (y+1<h && f[x,y+1]==255) Label(f,x,y+1,L);
+  if (y-1>=0 && f[x,y-1]==255) Label(f,x,y-1,L);
+}
+
+int labeling(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte L =1;
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        if (f[x,y]==255) 
+        {
+           Label(f, x, y, L);
+           L+=1;
+        }
+
+   return L-1;
+}
+
+ARGB mkColor(byte R,byte G,byte B)
+{
+   ARGB c = new ARGB();
+
+   c.R = R;
+   c.G = G;
+   c.B = B;
+   c.A = 255;
+
+   return c;
+}
+
+ARGB[,] toColor(byte[,]f,ARGB[] tab)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   ARGB[,] g = new ARGB[w,h];
+
+   for (int y=0;y<h;y++)
+      for (int x=0;x<w;x++)
+         g[x,y] = tab[f[x,y]];
+
+   return g;
+}
+
+byte[,] get_region(byte[,]f,int id)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        if (f[x,y]==id) g[x,y]=255;
+
+   return g;
+
+
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   int num = labeling(f);
+
+   ARGB[] colors = new ARGB[256];
+   colors[0] = mkColor(0,0,0);
+   colors[1] = mkColor(255,255,0);
+   colors[2] = mkColor(0,255,0);
+   colors[3] = mkColor(0,255,255);
+   colors[4] = mkColor(0,0,255);
+   colors[5] = mkColor(255,0,255);
+   colors[6] = mkColor(255,0,0);
+
+  ShowImg("label",toColor(f,colors));
+
+  for (int id=1;id<=num;id++)
+     ShowImg(id.ToString(),get_region(f,id));    
+
+}

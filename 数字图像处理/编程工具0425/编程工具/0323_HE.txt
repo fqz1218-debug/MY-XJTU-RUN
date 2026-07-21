@@ -1,0 +1,109 @@
+float[] get_histo(byte[,] f)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   float[] histo = new float[256];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        histo[f[x,y]] += 1;
+
+
+   for (int n=0;n<256;n++)
+        histo[n] /= w*h;
+
+   return histo;
+}
+
+void show_histo(string info,float[] histo)
+{
+   byte[,] f = new byte[256,101];
+
+   for (int x=0;x<256;x++)
+      for (int y=0;y<=100;y++)
+      {
+          if (100-y<histo[x]*2000) f[x,y]=0;
+          else f[x,y]=255; 
+      }
+
+   ShowImg(info,f);
+}
+
+byte[,] gt_ab(byte[,] f,double a,double b)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=S(f[x,y]*a+b);
+
+   return g;
+}
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+byte[,] GT(byte[,] f,byte[] tab)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        g[x,y]=tab[f[x,y]];
+        
+   return g;
+}
+
+byte[,] HE(byte[,]f)
+{
+   float[] histo = get_histo(f);
+   float[] sh = new float[256];
+
+   sh[0] = histo[0];
+   for (int n=1;n<256;n++)
+      sh[n] = sh[n-1]+histo[n];
+
+   byte[] tab = new byte[256];
+   for (int n=0;n<256;n++)
+      tab[n] = (byte)(255*sh[n]);
+
+  return GT(f,tab); 
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   show_histo("h of f",get_histo(f));
+
+  byte[,] f1 = gt_ab(f,0.5,0);
+  byte[,] f2 = gt_ab(f,0.5,128);
+  byte[,] f3 = gt_ab(f,0.5,64);
+
+  ShowImg("f1",f1);
+  show_histo("h of f1",get_histo(f1));
+  ShowImg("he of f1",HE(f1));
+
+  ShowImg("f2",f2);
+  show_histo("h of f2",get_histo(f2));
+  ShowImg("he of f2",HE(f2));
+
+  ShowImg("f3",f3);
+  show_histo("h of f3",get_histo(f3));
+  ShowImg("he of f3",HE(f3));
+
+  ShowImg("he of f",HE(f));
+}

@@ -1,0 +1,117 @@
+
+byte[,] filter2D(byte[,] f,float[,]mask)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   int M = mask.GetLength(0)/2;
+   int N = mask.GetLength(1)/2;
+
+   for (int y=N;y<h-N;y++)
+     for (int x=M;x<w-M;x++)
+     { 
+       float r = 0;
+       for (int m=-M;m<=M;m++)
+          for (int n=-N;n<=N;n++)
+          {
+            r+=f[x+m,y+n]*mask[M+m,N+n];
+           }
+       g[x,y]=S(r);
+      }
+
+   return g;
+}
+
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+float[,] blurMxN(int M,int N)
+{
+   float[,] mask = new float[2*M+1,2*N+1];
+
+   float s = (2*M+1)*(2*N+1);
+
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        mask[M+m,N+n] = 1.0f/s;
+
+   return mask;
+}
+
+float[,] g_blur(double r)
+{
+   int M = (int)(r*3);
+   int N = M;
+
+   float[,] mask = new float[2*M+1,2*N+1];
+
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        mask[M+m,N+n] = (float)Exp(-(m*m+n*n)/(2*r*r));
+
+   float s = 0;
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        s += mask[M+m,N+n];
+
+   for (int m=-M;m<=M;m++)
+      for (int n=-N;n<=N;n++)
+        mask[M+m,N+n] /= s;
+
+   return mask;
+}
+
+void add_noise(byte[,] f,int s_count,int p_count)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   for (int n=0;n<s_count;n++)
+   {
+      int x = (int)(Rand()*w);
+      int y = (int)(Rand()*h);
+
+      f[x,y] = 255;
+   }
+
+   for (int n=0;n<p_count;n++)
+   {
+      int x = (int)(Rand()*w);
+      int y = (int)(Rand()*h);
+
+      f[x,y] = 0;
+   }
+}
+
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   add_noise(f,200,100);
+   ShowImg("noise f",f);
+
+   /*
+   byte[,] g = filter(f);
+   ShowImg("g",g);
+   float[,] mask = new float[3,3];
+   mask[0,0] = 0;    mask[1,0] =-1;   mask[2,0] = 0;  
+   mask[0,1] =-1;    mask[1,1] = 5;   mask[2,1] =-1;  
+   mask[0,2] = 0;    mask[1,2] =-1;   mask[2,2] = 0;  
+
+   ShowImg("g~",filter2D(f,mask));
+   */
+  
+  ShowImg("g blur,r = 1",filter2D(f,g_blur(1)));
+  ShowImg("g blur,r = 2",filter2D(f,g_blur(2)));
+  ShowImg("g blur,r = 3",filter2D(f,g_blur(3)));
+
+}

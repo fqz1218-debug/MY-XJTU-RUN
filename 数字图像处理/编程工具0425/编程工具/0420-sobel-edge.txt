@@ -1,0 +1,155 @@
+byte[,] filter2D(byte[,] f,float[,]mask)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   int M = mask.GetLength(0)/2;
+   int N = mask.GetLength(1)/2;
+
+   for (int y=N;y<h-N;y++)
+     for (int x=M;x<w-M;x++)
+     { 
+       float r = 0;
+       for (int m=-M;m<=M;m++)
+          for (int n=-N;n<=N;n++)
+          {
+            r+=f[x+m,y+n]*mask[M+m,N+n];
+           }
+       g[x,y]=S(r);
+      }
+
+   return g;
+}
+
+byte[,] highpass2D(byte[,] f,float[,]mask)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+   int M = mask.GetLength(0)/2;
+   int N = mask.GetLength(1)/2;
+
+   for (int y=N;y<h-N;y++)
+     for (int x=M;x<w-M;x++)
+     { 
+       float r = 0;
+       for (int m=-M;m<=M;m++)
+          for (int n=-N;n<=N;n++)
+          {
+            r+=f[x+m,y+n]*mask[M+m,N+n];
+           }
+       g[x,y]=S(r+128);
+      }
+
+   return g;
+}
+
+
+
+
+byte S(double v)
+{
+   if (v<0) return 0;
+   if (v>255) return 255;
+   return (byte)v;
+}
+
+
+float[,] sobel_x()
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] =-1;    mask[1,0] = 0;   mask[2,0] = 1;  
+   mask[0,1] =-2;    mask[1,1] = 0;   mask[2,1] = 2;  
+   mask[0,2] =-1;    mask[1,2] = 0;   mask[2,2] = 1;  
+
+   return mask;
+}
+
+float[,] sobel_y()
+{
+   float[,] mask = new float[3,3];
+
+   mask[0,0] =-1;    mask[1,0] =-2;   mask[2,0] =-1;  
+   mask[0,1] = 0;    mask[1,1] = 0;   mask[2,1] = 0;  
+   mask[0,2] = 1;    mask[1,2] = 2;   mask[2,2] = 1;  
+
+   return mask;
+}
+
+byte[,] get_mag(byte[,]gx,byte[,]gy)
+{ 
+   int w = gx.GetLength(0);
+   int h = gx.GetLength(1);
+
+   byte[,] mag = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         int dx = gx[x,y]-128;
+         int dy = gy[x,y]-128;
+
+         mag[x,y] = S(Sqrt(dx*dx+dy*dy)); 
+     }
+
+   return mag;
+}
+
+byte[,] get_mag_d4(byte[,]gx,byte[,]gy)
+{ 
+   int w = gx.GetLength(0);
+   int h = gx.GetLength(1);
+
+   byte[,] mag = new byte[w,h];
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+     {
+         int dx = gx[x,y]-128;
+         int dy = gy[x,y]-128;
+
+         mag[x,y] = S(Abs(dx)+Abs(dy)); 
+     }
+
+   return mag;
+}
+
+byte[,] seg_thr(byte[,] f,int thr)
+{
+   int w = f.GetLength(0);
+   int h = f.GetLength(1);
+
+   byte[,] g = new byte[w,h];
+
+
+   for (int y=0;y<h;y++)
+     for (int x=0;x<w;x++)
+        if (f[x,y]>thr) g[x,y]=255;
+        else g[x,y] = 0; 
+
+   return g;
+}
+
+void main()
+{
+   byte[,] f = LoadImg();
+   ShowImg("f",f);
+
+   byte[,] gx = highpass2D(f,sobel_x());
+   ShowImg("gx",gx);
+
+   byte[,] gy = highpass2D(f,sobel_y());
+   ShowImg("gy",gy);
+
+   byte[,] mag = get_mag(gx,gy);
+   ShowImg("mag",mag);
+
+   ShowImg("edge,thr=32",seg_thr(mag,32));
+   ShowImg("edge,thr=64",seg_thr(mag,64));
+
+}
